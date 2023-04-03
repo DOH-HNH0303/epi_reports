@@ -328,3 +328,9 @@ def new_pdf(font="Times"):
   """Initiates new pdf file"""
   pdf = FPDF(orientation='P', unit='mm', format='letter')
   return pdf
+
+__all__ = ["add_dendrogram_as_pdf", "add_page_header", \
+"add_section_header", "add_paragraph", "add_table", "combine_similar_columns", \
+"create_dt_col", "create_dummy_data", "join_pdfs", "remove_nan_from_list", "unique", \
+new_pdf]# _add_spaces, _closest_value, _convert, _flatten, _font_style, _reformat, \
+#_remove_nan_from_list]
