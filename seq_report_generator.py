@@ -5,6 +5,7 @@ import pandas as pd
 from Bio import Phylo
 import matplotlib.pyplot as plt
 from pathlib import Path
+from PIL import Image
 
 
 def add_dendrogram_as_pdf(pdf_name, tree_file, format="newick", output_filename=""):
@@ -39,6 +40,13 @@ def add_dendrogram_as_pdf(pdf_name, tree_file, format="newick", output_filename=
 
 #def add_existing_pdf(pdf_name, existing_file):
  # pdf_name.Template(existing_file, x = 10, y = 10, w = 80, h = 30, type = 'P')
+def add_image(pdf_name, file):
+  pdf_name.ln()
+  img = Image.open(file)
+  width, height = img.size
+  new_height = round((200 * height) / width)
+  pdf_name.image("pangenome_matrix.png", h=new_height, w=200)
+  
 
 def add_page_header(pdf_name, text='Header of PDF Report', font='Times', fontsize=16, bold=True,underline=False,italic=False):
   """Creates new page in pdf and adds text as header"""
@@ -76,24 +84,21 @@ def add_table(pdf_name, df, col_len_dict={0:24, 1:20}, max_line_len = 40):
 
   hold = col_width
   lh_list = [] #list with proper line_height for each row
-  use_default_height = 0 #flag
 
   count = 0 
   for index, row in df_cp.iterrows():
+      new_line_height = 7
       for datum in row:
           datum = str(datum)
           word_list = datum.split()
           number_of_words = len(word_list) #how many words
-          if number_of_words>2: #names and cities formed by 2 words like Los Angeles are ok)
-              use_default_height = 1
-              new_line_height = pdf_name.font_size * (number_of_words/3) #new height change according to data 
+          if number_of_words>2 or len(datum)>10:#names and cities formed by 2 words like Los Angeles are ok)
+              l_height = pdf_name.font_size * (number_of_words/2)+1 #new height change according to data 
+              if l_height > new_line_height:
+                new_line_height = l_height  #new height change according to data 
       count +=1
-      if not use_default_height:
-          lh_list.append(line_height)
-      else:
-          lh_list.append(new_line_height)
-          use_default_height = 0 
-  
+      lh_list.append(new_line_height)
+
   #create your fpdf table ..passing also max_line_height!
   if col_len_dict:      
     for key in list(col_len_dict.keys()):
@@ -146,7 +151,7 @@ def create_dt_col(df):
     dt_omega = df["dt_omega"]
     dt_list = []
     for i in range(len(df)):
-        if dt_beta[i] or dt_omega[i] == "positive":
+        if (dt_beta[i] or dt_omega[i]) == "positive":
             dt_list.append("+")
         else:
             dt_list.append("-")
@@ -289,8 +294,9 @@ def _reformat(df, df_list=[],df_leng_list=[], max_line_len=40):
       col_list, max_vals = _add_spaces(df[col].tolist(), df_leng_list[idx])
       #print("max_val", max_vals, col_list)
       df[col] = col_list
+      max_vals = max_vals[0]
       if max_vals == 0:
-        max_vals = 1
+        max_vals = 1.1
       max_height_list.append(max_vals)
   
   df = df.replace('nan', '')
