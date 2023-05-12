@@ -166,7 +166,7 @@ def create_dummy_data(df, col_name, fill_text):
     return df
 
 def join_pdfs(list, output_filename):
-  output = PdfFileWriter()
+  output = PdfWriter()
   for pdf in list:
     reader = PdfReader(pdf)
     number_of_pages = len(reader.pages)
