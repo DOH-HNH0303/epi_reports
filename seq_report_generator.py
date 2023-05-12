@@ -1,5 +1,5 @@
 from fpdf import FPDF
-from PyPDF2 import PdfFileReader, PdfReader, PdfFileWriter
+from PyPDF2 import PdfFileReader, PdfReader, PdfWriter
 import numpy as np
 import pandas as pd
 from Bio import Phylo
