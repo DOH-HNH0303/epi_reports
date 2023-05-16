@@ -45,7 +45,7 @@ def add_image(pdf_name, file):
   img = Image.open(file)
   width, height = img.size
   new_height = round((200 * height) / width)
-  pdf_name.image("pangenome_matrix.png", h=new_height, w=200)
+  pdf_name.image(file, h=new_height, w=200)
   
 
 def add_page_header(pdf_name, text='Header of PDF Report', font='Times', fontsize=16, bold=True,underline=False,italic=False):
