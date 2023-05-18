@@ -283,8 +283,8 @@ def _reformat(df, df_list=[],df_leng_list=[], max_line_len=40):
       df_list = df.columns
   if not df_leng_list:
       df_leng_list=([max_line_len]*len(df))
-  if len(df.columns) >=8:
-    df = df.iloc[:, [0,1,2,3,4,5,6,7]]
+  #if len(df.columns) >=8:
+  #  df = df.iloc[:, [0,1,2,3,4,5,6,7]]
     print("")
   max_height_list = []
   #Determine max number of rows of wrapped text per row of cells and create array of height multipliers
