@@ -103,8 +103,9 @@ def add_table(pdf_name, df, col_len_dict={0:24, 1:20}, max_line_len = 40):
   if col_len_dict:      
     for key in list(col_len_dict.keys()):
       hold[key] = col_len_dict[key]
-  hold[0]=24
-  hold[1]=20
+  # To force size of first two columns:
+  # hold[0]=24
+  # hold[1]=20
 
   pdf_name.set_fill_color(r=226, g=228, b=249)
   # Create table headers
@@ -282,7 +283,7 @@ def _reformat(df, df_list=[],df_leng_list=[], max_line_len=40):
   if not df_list:
       df_list = df.columns
   if not df_leng_list:
-      df_leng_list=([max_line_len]*len(df))
+      df_leng_list=([max_line_len]*len(df.columns))
   #if len(df.columns) >=8:
   #  df = df.iloc[:, [0,1,2,3,4,5,6,7]]
   #  print("")
