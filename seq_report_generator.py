@@ -8,12 +8,15 @@ from pathlib import Path
 from PIL import Image
 
 
-def add_dendrogram_as_pdf(pdf_name, tree_file, format="newick", output_filename=""):
+def add_dendrogram_as_pdf(pdf_name,
+                          tree_file,
+                          format="newick",
+                          output_filename=""):
   tree = Phylo.read(tree_file, format)
   tree.ladderize()
   count = 0
   for i in tree.get_terminals():
-    count+=1
+    count += 1
   
   mdist = max([tree.distance(tree.root, x) for x in tree.get_terminals()])
   plt.rc('font', size=7)
@@ -31,9 +34,9 @@ def add_dendrogram_as_pdf(pdf_name, tree_file, format="newick", output_filename=
              xlim=(-mdist*0.1,mdist+mdist*0.1),
              axis=('off',),)
   if output_filename:
-    base=output_filename
+    base = output_filename
   else:
-    base=(Path(tree_file).stem)+".pdf"
+    base = (Path(tree_file).stem) + ".pdf"
   plt.savefig(base, dpi=150, bbox_inches='tight')
   
   #add_existing_pdf(pdf_name, base)
@@ -79,8 +82,22 @@ def add_table(pdf_name, df, col_len_dict={0:24, 1:20}, max_line_len = 40):
   data, width_ratios, max_height_list = _reformat(df, max_line_len=max_line_len)
   df_cp = df.copy()
   col_width = []
-  for i in width_ratios:
-    col_width.append(pdf_name.epw*i/sum(width_ratios))
+  ignore_width = 0
+  ignore_sum = 0
+  for i in list(col_len_dict.keys()):
+    width_ratios[i] = col_len_dict[i]
+    ignore_width += col_len_dict[i]
+    ignore_sum +=width_ratios[i]
+    
+  
+  for i in range(len(width_ratios)):
+    if i in list(col_len_dict.keys()):
+      col_width.append(col_len_dict[i])
+    else:
+      if pdf_name.epw * width_ratios[i] / sum(width_ratios) < 6:
+        col_width.append(6)
+      else:
+        col_width.append((pdf_name.epw-ignore_width) * width_ratios[i] / (sum(width_ratios)-ignore_sum))
 
   hold = col_width
   lh_list = [] #list with proper line_height for each row
@@ -100,13 +117,12 @@ def add_table(pdf_name, df, col_len_dict={0:24, 1:20}, max_line_len = 40):
       lh_list.append(new_line_height)
 
   #create your fpdf table ..passing also max_line_height!
-  if col_len_dict:      
-    for key in list(col_len_dict.keys()):
-      hold[key] = col_len_dict[key]
-  # To force size of first two columns:
-  # hold[0]=24
-  # hold[1]=20
-
+  #if col_len_dict:
+   # for key in list(col_len_dict.keys()):
+    #  hold[key] = col_len_dict[key]
+  #hold[0] = 24
+  #hold[1] = 20
+  #print("hold", hold)
   pdf_name.set_fill_color(r=226, g=228, b=249)
   # Create table headers
   for idx in range(len(df.columns)):
@@ -128,6 +144,7 @@ def add_table(pdf_name, df, col_len_dict={0:24, 1:20}, max_line_len = 40):
             max_line_height=pdf_name.font_size)
       pdf_name.ln(line_height)
 
+
 def combine_similar_columns(df, column_list):
     col_dict = {}
     for i in column_list:
@@ -147,6 +164,7 @@ def combine_similar_columns(df, column_list):
         df_list.append(idx_list)
     return df_list
 
+
 def create_dt_col(df):
     dt_beta = df["dt_beta"]
     dt_omega = df["dt_omega"]
@@ -159,12 +177,14 @@ def create_dt_col(df):
     df["DT"] = dt_list
     return df
 
+
 def create_dummy_data(df, col_name, fill_text):
     fill_list = []
     for i in range(len(df)):
         fill_list.append(fill_text)
     df[col_name] = fill_list
     return df
+
 
 def join_pdfs(list, output_filename):
   output = PdfWriter()
@@ -207,7 +227,7 @@ def _add_spaces(list, maxlen):
 
         new_list = []
         for sub_str in new_str:
-            new_sub = [sub_str[i:i+maxlen] for i in range(0, len(sub_str), maxlen)]
+            new_sub = [sub_str[i:i + maxlen] for i in range(0, len(sub_str), maxlen)]
             new_sub = "\n".join(new_sub)
             new_list.append(new_sub)
 
@@ -220,7 +240,7 @@ def _add_spaces(list, maxlen):
         for i in range(len(n_str)):
             if n_str[i] == ' ':
                 idx_list.append(i)
-            elif n_str[i] == '\\'  and n_str[i+1]=='n':
+            elif n_str[i] == '\\' and n_str[i + 1] == 'n':
                 count = -1
                 space_idx.append(i)
             else:
@@ -228,12 +248,12 @@ def _add_spaces(list, maxlen):
             if count == maxlen:
                 if idx_list:
                     idx = _closest_value(idx_list, i)
-                    if i-idx >=maxlen:
+                    if i - idx >= maxlen:
                         space_idx.append(i)
                         count = 0
                     else:
                         space_idx.append(idx)
-                        count = i-idx
+                        count = i - idx
                 else:
                     space_idx.append(i)
                     count = 0
@@ -254,32 +274,37 @@ def _add_spaces(list, maxlen):
         total_counts.append(max(new_line_count))
     return(head_list, new_line_count)
 
+
 def _closest_value(input_list, input_value):
   arr = np.asarray(input_list)
   i = (np.abs(arr - input_value)).argmin()
   return arr[i]
+
 
 def _convert(string):
     list1 = []
     list1[:0] = string
     return list1
 
+
 def _flatten(l):
     return [item for sublist in l for item in sublist]
 
+
 def _font_style(bold=False,underline=False,italic=False):
-  font_style=""
+  font_style = ""
   if bold:
-    font_style+="B"
+    font_style += "B"
   if underline:
-    font_style+="U"
+    font_style += "U"
   if italic:
-    font_style+="I"
+    font_style += "I"
   return font_style
+
 
 def _reformat(df, df_list=[],df_leng_list=[], max_line_len=40):
   df = df.copy()
-  print(type(df))
+  #print(type(df))
   if not df_list:
       df_list = df.columns
   if not df_leng_list:
@@ -289,7 +314,7 @@ def _reformat(df, df_list=[],df_leng_list=[], max_line_len=40):
   #  print("")
   max_height_list = []
   #Determine max number of rows of wrapped text per row of cells and create array of height multipliers
-  print(df_list)
+  #print(df_list)
   for idx in range(len(df_list)):
       col = df_list[idx]
       col_list, max_vals = _add_spaces(df[col].tolist(), df_leng_list[idx])
@@ -301,7 +326,7 @@ def _reformat(df, df_list=[],df_leng_list=[], max_line_len=40):
       max_height_list.append(max_vals)
   
   df = df.replace('nan', '')
-  df = df.replace(',',' ', regex=True)
+  df = df.replace(',', ' ', regex=True)
 
   #Based on words per cell
   width_ratios = []
@@ -316,23 +341,25 @@ def _reformat(df, df_list=[],df_leng_list=[], max_line_len=40):
       width_ratios.append(len(max_word_len))
       adjusting_values.append(len(split_list))
   sum_ratio = sum(width_ratios)
-  tenth = round(sum_ratio*.10)
+  tenth = round(sum_ratio * .10)
   max_indices = list(np.array([index for index, item in enumerate(adjusting_values[2:]) if item == max(adjusting_values[2:])])+2)
 
   space = 0
   for i in range(len(width_ratios)):
-      if i==0 or i==1:
-          if width_ratios[i] - tenth >= 1:
-              space+=(width_ratios[i] - tenth)
-              width_ratios[i] = tenth
-      elif i in max_indices:
+      #if i == 0 or i == 1:
+       #   if width_ratios[i] - tenth >= 1:
+        #      space+=(width_ratios[i] - tenth)
+         #     width_ratios[i] = tenth
+      if i in max_indices:
           width_ratios[i]=width_ratios[i]+(space/len(max_indices))
 
   table = tuple(df.itertuples(index=False))
   return table, width_ratios, max_height_list
 
+
 def _remove_nan_from_list(l):
     return [item for item in l if str(item) != 'nan']
+    
   
 def new_pdf(font="Times"):
   """Initiates new pdf file"""
